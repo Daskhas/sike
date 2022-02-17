@@ -2,6 +2,9 @@
 let isNodePressed = false
 let nodes=[]
 let nodeValue= null
+let edges=[]
+let setSrc = false, toBeEdged= false
+let src, dest
 
 
 
@@ -38,8 +41,10 @@ function setup(){
     getNode = createDiv()
     getNode.attribute('class','getNodeBox')
     //getNode.position(500,500)
-    
-    inpNode = createInput('Enter node value');
+    getNodePrompt = createDiv('Enter node value:')
+    getNode.child(getNodePrompt)
+
+    inpNode = createInput('Node');
     inpNode.input(addNodeInput);
     inpNode.attribute('class','nodeinput')
     getNode.child(inpNode)
@@ -57,8 +62,10 @@ function setup(){
     getEdge = createDiv()
     getEdge.attribute('class','getEdgeBox')
     //getEdge.position(400,400)
-    
-    inpEdge = createInput('Enter Edge Value');
+    getEdgePrompt = createDiv('Enter edge value:')
+    getEdge.child(getEdgePrompt)
+
+    inpEdge = createInput('Edge');
     inpEdge.input(addEdgeInput);
     inpEdge.attribute('class','edgeinput')
     getEdge.child(inpEdge)
@@ -80,8 +87,16 @@ function draw(){
 
     background(255);
 
+
+    if (toBeEdged) {
+        console.log('Edge drawn')
+        edges.push(new Edge(src, dest, edgeValue))
+        toBeEdged = false
+        srcSet = false
+    }
+
     if (nodeValue != null) {
-        console.log('peek')
+        console.log('Node drawn')
         nodes.push(new Node(getNode.position().x, getNode.position().y, nodeValue, '#28fc03'))
         startsel.option(nodes[nodes.length - 1].showValue());
         destsel.option(nodes[nodes.length - 1].showValue())
@@ -90,6 +105,14 @@ function draw(){
     for (var node of nodes) {
         node.display()
     }
+
+    if (edges.length != 0) {
+        for (var edge of edges) {
+            console.log(edge.getSource().getX(), edge.getSource().getY(), edge.getDest().getX(), edge.getDest().getY())
+            edge.display()
+        }
+    }
+
 }
 
 function addNodeInput(){
@@ -103,14 +126,49 @@ function addEdgeInput(){
 function addNode(){
     
     if (nodeValue != null) {
-        console.log('sup')
+        console.log('Node added')
         redraw()
+        inpNode.value(null);
         getNode.hide()
     }
 }
 
 function removeNode() {
+    inpNode.value(null);
     getNode.hide()
+}
+
+function removeEdge(){
+    inpEdge.value(null);
+    getEdge.hide()
+}
+
+function setEdgeValue(){
+    
+    if(edgeValue!= null){
+        toBeEdged = true
+    srcSet = false
+    console.log('Edge added')
+    redraw()
+    inpEdge.value(null);
+    getEdge.hide()
+    
+}
+}
+
+function handleEdge(node){
+    if(!setSrc){
+        src = node;
+        setSrc = true
+        //redraw()
+    }
+    else{
+        dest = node;
+        getEdge.position((src.getX()+dest.getX())*0.5,(src.getY()+dest.getY())*0.5)
+        getEdge.show()
+        setEdge.mouseReleased(setEdgeValue)
+        delEdge.mouseReleased(removeEdge)
+    }
 }
 
 function create(){
@@ -118,10 +176,12 @@ function create(){
         if (node.isPressed()){
             isNodePressed = true;
             console.log(node.getX(),node.getY())
-            
+            handleEdge(node)
+            break
         }
     }
     if(!isNodePressed){
+        setSrc = false
         getNode.position(mouseX,mouseY)
         getNode.show()
         setNode.mouseReleased(addNode)

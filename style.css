@@ -36,7 +36,7 @@ body{
 .getNodeBox,.getEdgeBox{
     display: grid;
     grid-template-columns: auto auto;
-    height: 45px;
+    height: 63px;
     width: 150px;
     border-style:solid;
     border-width: 3px;
