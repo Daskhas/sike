@@ -26,7 +26,12 @@ class Node{
         else
             return false;
     }
-    showValue() {
+    getValue() {
         return this.val;
+    }
+    outline(){
+        noFill()
+        strokeWeight(1)
+        ellipse(this.x, this.y, 60, 60)
     }
 }

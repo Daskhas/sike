@@ -5,12 +5,13 @@ let nodeValue= null
 let edges=[]
 let setSrc = false, toBeEdged= false
 let src, dest
-
+let makeEdgeB = false;
 
 
 
 
 function setup(){
+    data = new graph()
     canvas = createCanvas(window.innerWidth,window.innerHeight-100)
     canvas.position(0,99);
     canvas.mouseReleased(create)
@@ -37,6 +38,8 @@ function setup(){
     calcbutton.attribute('class','calculate')
     grid.child(calcbutton)
 
+    
+
     //input node box with input and two button
     getNode = createDiv()
     getNode.attribute('class','getNodeBox')
@@ -53,7 +56,7 @@ function setup(){
     setNode.attribute('class','setNodeB')
     getNode.child(setNode)
 
-    delNode= createButton("Delete")
+    delNode= createButton("Cancel")
     delNode.attribute('class','setDelB')
     getNode.child(delNode)
     
@@ -74,12 +77,11 @@ function setup(){
     setEdge.attribute('class','setEdgeB')
     getEdge.child(setEdge)
 
-    delEdge= createButton("Delete")
+    delEdge= createButton("Cancel")
     delEdge.attribute('class','delEdgeB')
     getEdge.child(delEdge)
 
     getEdge.hide();
-
     noLoop()
 }
 
@@ -87,23 +89,28 @@ function draw(){
 
     background(255);
 
-
     if (toBeEdged) {
         console.log('Edge drawn')
         edges.push(new Edge(src, dest, edgeValue))
         toBeEdged = false
-        srcSet = false
+        setSrc = false
+    }
+    else{
+        if (nodeValue != null) {
+            console.log('Node drawn')
+            nodes.push(new Node(getNode.position().x, getNode.position().y, nodeValue, '#28fc03'))
+            startsel.option(nodes[nodes.length - 1].getValue());
+            destsel.option(nodes[nodes.length - 1].getValue())
+        }
     }
 
-    if (nodeValue != null) {
-        console.log('Node drawn')
-        nodes.push(new Node(getNode.position().x, getNode.position().y, nodeValue, '#28fc03'))
-        startsel.option(nodes[nodes.length - 1].showValue());
-        destsel.option(nodes[nodes.length - 1].showValue())
-    }
+    
 
     for (var node of nodes) {
         node.display()
+        if(setSrc){
+            src.outline();
+        }
     }
 
     if (edges.length != 0) {
@@ -119,6 +126,7 @@ function addNodeInput(){
     nodeValue = this.value()
 }
 
+
 function addEdgeInput(){
     edgeValue = this.value()
 }
@@ -126,14 +134,23 @@ function addEdgeInput(){
 function addNode(){
     
     if (nodeValue != null) {
-        console.log('Node added')
+        
+        console.log('Node added to graph')
+        data.add_node(nodeValue)
         redraw()
         inpNode.value(null);
         getNode.hide()
+        console.log(data)
     }
 }
 
-function removeNode() {
+function removeNodePrompt() {
+    inpNode.value(null);
+    getNode.hide()
+}
+
+function removeNode(node){
+    
     inpNode.value(null);
     getNode.hide()
 }
@@ -147,12 +164,14 @@ function setEdgeValue(){
     
     if(edgeValue!= null){
         toBeEdged = true
-    srcSet = false
-    console.log('Edge added')
+        srcSet = false
+        makeEdgeB= false;
+    console.log('Edge added to graph')
+    data.add_edge(src.getValue(),dest.getValue(),edgeValue)
     redraw()
     inpEdge.value(null);
     getEdge.hide()
-    
+    console.log(data)
 }
 }
 
@@ -160,7 +179,7 @@ function handleEdge(node){
     if(!setSrc){
         src = node;
         setSrc = true
-        //redraw()
+        redraw()
     }
     else{
         dest = node;
@@ -178,6 +197,7 @@ function create(){
             console.log(node.getX(),node.getY())
             handleEdge(node)
             break
+            
         }
     }
     if(!isNodePressed){
